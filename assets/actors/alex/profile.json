@@ -1,0 +1,40 @@
+{
+  "name": "Alex",
+  "age_range": "30-35",
+  "category": "professional",
+  "persona": "Entrepreneur tech moderne et accessible",
+  "voice_style": "confiant, accessible, énergique",
+  "languages": ["fr", "en"],
+  "default_language": "fr",
+  "gender": "male",
+  "ethnicity": "caucasian",
+  "physical": {
+    "hair": "brown_short",
+    "style": "business_casual",
+    "expression": "confident_smile"
+  },
+  "voice_characteristics": {
+    "pitch": "medium",
+    "pace": "moderate",
+    "tone": "warm_professional",
+    "accent": "neutral_french"
+  },
+  "ideal_for": {
+    "hook_styles": ["problem", "solution"],
+    "video_formats": ["horizontal", "square"],
+    "target_audience": "professionals, entrepreneurs, tech workers",
+    "message_types": ["productivity", "business", "innovation"]
+  },
+  "sample_lines": {
+    "fr": [
+      "Salut, je suis Alex, et aujourd'hui je vais te montrer comment...",
+      "Tu sais ce qui m'énerve le plus ? Perdre du temps sur des tâches répétitives.",
+      "Avec Mila, j'ai enfin trouvé la solution que je cherchais."
+    ],
+    "en": [
+      "Hey, I'm Alex, and today I'm going to show you how...",
+      "You know what frustrates me the most? Wasting time on repetitive tasks.",
+      "With Mila, I finally found the solution I was looking for."
+    ]
+  }
+}

@@ -1,0 +1,70 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# API Keys & Secrets
+.env.local
+.env.production
+*.key
+
+# Generated outputs (keep structure, ignore content)
+outputs/hooks/*.json
+outputs/scripts/*.json
+outputs/audio/*.wav
+outputs/audio/*.mp3
+outputs/video_raw/*.mp4
+outputs/video_final/*.mp4
+outputs/*.json
+expenses.json
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# FFmpeg temp files
+*.fftemp
+
+# Actor assets (keep directory structure)
+assets/actors/*/portrait.jpg
+assets/actors/*/voice_sample.wav
+assets/backgrounds/*
+assets/music/*
+
+# Keep example files and templates
+!assets/actors/*/profile.json
+!templates/*.json
+!.env

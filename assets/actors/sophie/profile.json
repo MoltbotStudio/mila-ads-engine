@@ -1,0 +1,40 @@
+{
+  "name": "Sophie",
+  "age_range": "28-32",
+  "category": "professional",
+  "persona": "Manager consultante dynamique et organisée",
+  "voice_style": "énergique, professionnelle, inspirante",
+  "languages": ["fr", "en"],
+  "default_language": "fr",
+  "gender": "female",
+  "ethnicity": "caucasian",
+  "physical": {
+    "hair": "blonde_medium",
+    "style": "professional_chic",
+    "expression": "confident_engaging"
+  },
+  "voice_characteristics": {
+    "pitch": "medium_high",
+    "pace": "dynamic",
+    "tone": "inspiring_professional",
+    "accent": "neutral_french"
+  },
+  "ideal_for": {
+    "hook_styles": ["solution", "curiosity"],
+    "video_formats": ["vertical", "square"],
+    "target_audience": "working women, managers, consultants",
+    "message_types": ["productivity", "leadership", "organization"]
+  },
+  "sample_lines": {
+    "fr": [
+      "Salut, c'est Sophie ! En tant que consultante, j'ai testé des dizaines d'outils...",
+      "La clé de ma productivité ? Avoir un assistant qui me comprend vraiment.",
+      "Mila a révolutionné ma façon de travailler, et je vais te montrer comment."
+    ],
+    "en": [
+      "Hi, it's Sophie! As a consultant, I've tested dozens of tools...",
+      "The key to my productivity? Having an assistant that truly understands me.",
+      "Mila revolutionized how I work, and I'm going to show you how."
+    ]
+  }
+}

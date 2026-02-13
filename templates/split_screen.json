@@ -1,0 +1,43 @@
+{
+  "name": "split_screen", 
+  "description": "Actor on left/right with content background",
+  "ffmpeg_command": [
+    "-i", "{video_input}",
+    "-i", "{background_content}",
+    "-i", "{logo_path}",
+    "-filter_complex", "[1:v]scale={bg_width}:{height}[bg];[0:v]scale={actor_width}:{height}[actor];[bg][actor]hstack[combined];[combined][2:v]overlay=W-w-20:20[with_logo];[with_logo]subtitles={subtitles_path}:force_style='FontSize=20,PrimaryColour=&Hffffff,OutlineColour=&H000000,Outline=2'[final]",
+    "-map", "[final]",
+    "-map", "0:a",
+    "-c:v", "libx264", 
+    "-c:a", "aac",
+    "-preset", "medium",
+    "-crf", "23",
+    "-movflags", "+faststart",
+    "{output}"
+  ],
+  "required_assets": {
+    "logo_path": "assets/logo.png",
+    "subtitles_path": "generated from script",
+    "background_content": "assets/backgrounds/tech_bg.mp4"
+  },
+  "supported_formats": {
+    "vertical": {
+      "width": 1080, 
+      "height": 1920,
+      "actor_width": 540,
+      "bg_width": 540
+    },
+    "square": {
+      "width": 1080,
+      "height": 1080, 
+      "actor_width": 540,
+      "bg_width": 540
+    },
+    "horizontal": {
+      "width": 1920,
+      "height": 1080,
+      "actor_width": 960, 
+      "bg_width": 960
+    }
+  }
+}

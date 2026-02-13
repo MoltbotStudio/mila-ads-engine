@@ -1,0 +1,26 @@
+{
+  "name": "talking_head",
+  "description": "Simple talking head with subtitles and logo",
+  "ffmpeg_command": [
+    "-i", "{video_input}",
+    "-i", "{logo_path}",
+    "-filter_complex", "[0:v]scale={width}:{height}[scaled];[scaled][1:v]overlay=W-w-20:20[with_logo];[with_logo]subtitles={subtitles_path}:force_style='FontSize=24,PrimaryColour=&Hffffff,OutlineColour=&H000000,Outline=2'[final]",
+    "-map", "[final]",
+    "-map", "0:a",
+    "-c:v", "libx264",
+    "-c:a", "aac",
+    "-preset", "medium",
+    "-crf", "23",
+    "-movflags", "+faststart",
+    "{output}"
+  ],
+  "required_assets": {
+    "logo_path": "assets/logo.png",
+    "subtitles_path": "generated from script"
+  },
+  "supported_formats": {
+    "vertical": {"width": 1080, "height": 1920},
+    "square": {"width": 1080, "height": 1080},
+    "horizontal": {"width": 1920, "height": 1080}
+  }
+}

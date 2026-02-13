@@ -1,0 +1,36 @@
+{
+  "name": "problem_solution",
+  "description": "Transition effect from problem (dark) to solution (bright)",
+  "ffmpeg_command": [
+    "-i", "{video_input}",
+    "-i", "{logo_path}",
+    "-i", "{transition_music}",
+    "-filter_complex", "[0:v]split=2[v1][v2];[v1]colorbalance=rs=-0.3:gs=-0.3:bs=-0.3[dark];[v2]colorbalance=rs=0.2:gs=0.2:bs=0.2[bright];[dark][bright]blend=all_mode=fade:all_expr='A*(1-smoothstep(0.4,0.6,T/{duration}))+B*smoothstep(0.4,0.6,T/{duration})'[blended];[blended][1:v]overlay=W-w-20:20[with_logo];[with_logo]subtitles={subtitles_path}:force_style='FontSize=24,PrimaryColour=&Hffffff,OutlineColour=&H000000,Outline=2'[final]",
+    "-map", "[final]",
+    "-map", "0:a", 
+    "-map", "2:a",
+    "-filter_complex", "[0:a][2:a]amix=inputs=2:duration=shortest:dropout_transition=0[mixed_audio]",
+    "-map", "[mixed_audio]",
+    "-c:v", "libx264",
+    "-c:a", "aac",
+    "-preset", "medium", 
+    "-crf", "23",
+    "-movflags", "+faststart",
+    "{output}"
+  ],
+  "required_assets": {
+    "logo_path": "assets/logo.png",
+    "subtitles_path": "generated from script",
+    "transition_music": "assets/music/transition.mp3"
+  },
+  "supported_formats": {
+    "vertical": {"width": 1080, "height": 1920},
+    "square": {"width": 1080, "height": 1080}, 
+    "horizontal": {"width": 1920, "height": 1080}
+  },
+  "timing": {
+    "problem_phase": "0-40%",
+    "transition": "40-60%", 
+    "solution_phase": "60-100%"
+  }
+}

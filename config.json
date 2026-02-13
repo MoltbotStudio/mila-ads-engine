@@ -1,0 +1,181 @@
+{
+  "version": "2.0",
+  "app": {
+    "name": "mila",
+    "default_language": "fr",
+    "supported_languages": ["fr", "en", "es"]
+  },
+  "actors": {
+    "alex": {
+      "name": "Alex",
+      "age_range": "30-35",
+      "category": "professional", 
+      "persona": "Entrepreneur tech moderne",
+      "voice_style": "confiant, accessible",
+      "languages": ["fr", "en"],
+      "default_language": "fr",
+      "gender": "male",
+      "ethnicity": "caucasian",
+      "portrait": "assets/actors/alex/portrait.jpg",
+      "voice_sample": "assets/actors/alex/voice_sample.wav"
+    },
+    "sophie": {
+      "name": "Sophie",
+      "age_range": "28-32", 
+      "category": "professional",
+      "persona": "Manager consultante dynamique",
+      "voice_style": "énergique, professionnelle",
+      "languages": ["fr", "en"],
+      "default_language": "fr", 
+      "gender": "female",
+      "ethnicity": "caucasian",
+      "portrait": "assets/actors/sophie/portrait.jpg",
+      "voice_sample": "assets/actors/sophie/voice_sample.wav"
+    },
+    "marc": {
+      "name": "Marc",
+      "age_range": "25-30",
+      "category": "creative",
+      "persona": "Freelance créatif décontracté", 
+      "voice_style": "détendu, créatif",
+      "languages": ["fr", "en"],
+      "default_language": "fr",
+      "gender": "male", 
+      "ethnicity": "caucasian",
+      "portrait": "assets/actors/marc/portrait.jpg",
+      "voice_sample": "assets/actors/marc/voice_sample.wav"
+    },
+    "emma": {
+      "name": "Emma",
+      "age_range": "22-25",
+      "category": "student",
+      "persona": "Étudiante master organisée",
+      "voice_style": "claire, motivée", 
+      "languages": ["fr", "en"],
+      "default_language": "fr",
+      "gender": "female",
+      "ethnicity": "caucasian", 
+      "portrait": "assets/actors/emma/portrait.jpg",
+      "voice_sample": "assets/actors/emma/voice_sample.wav"
+    },
+    "lucas": {
+      "name": "Lucas", 
+      "age_range": "20-24",
+      "category": "student",
+      "persona": "Étudiant ingénieur tech-savvy",
+      "voice_style": "jeune, enthousiaste",
+      "languages": ["fr", "en"], 
+      "default_language": "fr",
+      "gender": "male",
+      "ethnicity": "caucasian",
+      "portrait": "assets/actors/lucas/portrait.jpg",
+      "voice_sample": "assets/actors/lucas/voice_sample.wav"
+    },
+    "marie": {
+      "name": "Marie",
+      "age_range": "35-40", 
+      "category": "lifestyle",
+      "persona": "Mère active multitâches",
+      "voice_style": "chaleureuse, pratique",
+      "languages": ["fr", "en"],
+      "default_language": "fr",
+      "gender": "female", 
+      "ethnicity": "caucasian",
+      "portrait": "assets/actors/marie/portrait.jpg",
+      "voice_sample": "assets/actors/marie/voice_sample.wav"
+    },
+    "david": {
+      "name": "David",
+      "age_range": "55-65",
+      "category": "lifestyle", 
+      "persona": "Retraité actif curieux",
+      "voice_style": "posée, bienveillante",
+      "languages": ["fr", "en"],
+      "default_language": "fr",
+      "gender": "male",
+      "ethnicity": "caucasian",
+      "portrait": "assets/actors/david/portrait.jpg", 
+      "voice_sample": "assets/actors/david/voice_sample.wav"
+    }
+  },
+  "engines": {
+    "tts": {
+      "default": "chatterbox",
+      "chatterbox": {
+        "enabled": true,
+        "cost_per_char": 0.0,
+        "quality": "good",
+        "languages": ["fr", "en", "es"]
+      },
+      "elevenlabs": {
+        "enabled": false,
+        "cost_per_char": 0.00024,
+        "quality": "premium",
+        "languages": ["fr", "en", "es", "de", "it", "pt"]
+      }
+    },
+    "video": {
+      "default": "seedance",
+      "seedance": {
+        "enabled": true, 
+        "cost_per_second": 0.12,
+        "quality": "high",
+        "lip_sync": true,
+        "max_duration": 60
+      },
+      "kling": {
+        "enabled": false,
+        "cost_per_second": 0.08, 
+        "quality": "medium",
+        "lip_sync": false,
+        "max_duration": 30
+      }
+    },
+    "claude": {
+      "model": "claude-3-sonnet",
+      "cost_per_input_token": 0.000003,
+      "cost_per_output_token": 0.000015,
+      "max_tokens": 4000
+    }
+  },
+  "formats": {
+    "vertical": {
+      "ratio": "9:16", 
+      "resolution": "1080x1920",
+      "platforms": ["tiktok", "instagram_stories", "youtube_shorts"]
+    },
+    "square": {
+      "ratio": "1:1",
+      "resolution": "1080x1080", 
+      "platforms": ["instagram_feed", "facebook_feed"]
+    },
+    "horizontal": {
+      "ratio": "16:9",
+      "resolution": "1920x1080",
+      "platforms": ["youtube", "facebook_video"]
+    }
+  },
+  "templates": {
+    "talking_head": {
+      "description": "Acteur centré avec sous-titres",
+      "effects": ["subtitles", "light_music", "logo"],
+      "duration_range": [15, 60]
+    },
+    "split_screen": {
+      "description": "Acteur + contenu visuel", 
+      "effects": ["subtitles", "background_content", "logo"],
+      "duration_range": [30, 60]
+    },
+    "problem_solution": {
+      "description": "Transition problème vers solution",
+      "effects": ["subtitles", "transition_effects", "logo", "music"],
+      "duration_range": [15, 45]
+    }
+  },
+  "budget": {
+    "monthly_limit": 100.0,
+    "current_spent": 0.0,
+    "track_expenses": true,
+    "expenses_file": "expenses.json"
+  }
+}

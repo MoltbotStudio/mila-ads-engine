@@ -1,0 +1,44 @@
+# Mila Ads Engine - Python Dependencies
+
+# CLI framework
+typer[all]==0.9.0
+
+# Console output
+rich==13.7.0
+
+# HTTP requests
+requests==2.31.0
+
+# AI/ML APIs
+anthropic==0.7.8
+elevenlabs==0.2.26
+
+# Audio processing (for TTS integration)
+pydub==0.25.1
+
+# Video processing (for metadata)
+moviepy==1.0.3
+
+# Data handling
+pydantic==2.5.2
+
+# Environment variables
+python-dotenv==1.0.0
+
+# File handling
+pathlib2==2.3.7
+
+# Async support (for API calls)
+httpx==0.25.2
+asyncio-throttle==1.0.2
+
+# Audio analysis
+librosa==0.10.1
+
+# Development tools (optional)
+black==23.12.1
+pytest==7.4.3
+pytest-asyncio==0.21.1
+
+# System integration
+psutil==5.9.6
