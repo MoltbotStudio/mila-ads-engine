@@ -12,6 +12,22 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional, List, Dict, Any
 import requests
+
+# Anthropic SDK for Claude API
+import anthropic
+
+# Load .env file explicitly for API keys
+ENV_FILE = Path(__file__).parent / ".env"
+if ENV_FILE.exists():
+    with open(ENV_FILE) as f:
+        for line in f:
+            if line.strip() and not line.startswith('#') and '=' in line:
+                key, value = line.strip().split('=', 1)
+                if key not in os.environ:  # Don't override existing env vars
+                    os.environ[key] = value.strip('"\'')
+
+anthropic_client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+ANTHROPIC_AVAILABLE = True
 from rich.console import Console
 from rich.table import Table
 from rich.progress import track
@@ -142,6 +158,31 @@ def generate_file_id() -> str:
     """Generate unique file ID"""
     return f"{int(datetime.now().timestamp())}-{uuid.uuid4().hex[:8]}"
 
+def call_claude(system_prompt: str, user_prompt: str, max_tokens: int = 1000) -> str:
+    """Call Claude API with error handling"""
+    if not ANTHROPIC_AVAILABLE:
+        raise Exception("Anthropic SDK not installed. Run: pip3 install anthropic")
+    
+    api_key = os.environ.get('ANTHROPIC_API_KEY')
+    if not api_key:
+        raise Exception("ANTHROPIC_API_KEY not found in environment")
+    
+    try:
+        client = anthropic.Anthropic(api_key=api_key)
+        response = client.messages.create(
+            model="claude-3-5-sonnet-20241022",
+            max_tokens=max_tokens,
+            system=system_prompt,
+            messages=[{"role": "user", "content": user_prompt}]
+        )
+        return response.content[0].text
+    except anthropic.RateLimitError as e:
+        raise Exception(f"Claude API rate limit exceeded: {e}")
+    except anthropic.AuthenticationError as e:
+        raise Exception(f"Claude API authentication failed: {e}")
+    except Exception as e:
+        raise Exception(f"Claude API error: {e}")
+
 @app.command()
 def briefing(
     output: Optional[Path] = typer.Option(None, "--output", "-o", help="Output file path")
@@ -247,27 +288,80 @@ def generate_hooks(
             ]
         }
     else:
-        # TODO: Implement actual Claude API call
-        console.print("⚠️  Claude API integration not implemented yet. Using mock data.", style="yellow")
-        hooks = {
-            "id": generate_file_id(),
-            "timestamp": datetime.now().isoformat(),
-            "style": style,
-            "count": count,
-            "hooks": [
-                {
-                    "id": f"hook_{i:03d}",
-                    "text": f"Mock hook #{i} - {brief['app']['name']} résout vos problèmes de productivité en quelques clics!",
-                    "style": style,
-                    "estimated_duration": 30,
-                    "call_to_action": "Découvre Mila dès maintenant!"
-                } for i in range(1, count + 1)
-            ]
-        }
+        # Call Claude API for real hook generation
+        console.print("🤖 Generating hooks with Claude AI...", style="blue")
         
-        # Add to budget (estimated)
-        estimated_cost = count * 0.02  # Rough estimate
-        get_budget().add_expense("claude", estimated_cost, f"Generated {count} hooks")
+        system_prompt = """Tu es un copywriter expert marketing. Génère des hooks accrocheurs pour une app de meal planning IA appelée Mila.
+
+Règles:
+- Les hooks doivent être courts (5-15 mots idéalement, max 20 mots)
+- Style authentique, comme une amie qui partage une solution
+- Évite les superlatifs ("révolutionnaire", "magique", "incroyable")
+- Préfère les mots simples: "Simple", "Concret", "Vrai", "Enfin", "Libérée"
+- Cible: parents actifs avec enfants à la maison (28-45 ans, principalement mamans)
+- Ton: bienveillant, pragmatique, un peu imparfait, honnête
+
+Retourne UNIQUEMENT un JSON valide avec ce format exact:
+{
+  "hooks": [
+    {"id": "hook_001", "text": "...", "estimated_duration": 5, "call_to_action": "Essaie gratuitement", "style": "problem"},
+    ...
+  ]
+}"""
+        
+        user_prompt = f"""Génère {count} hooks de style '{style}' pour Mila.
+
+Style '{style}' signifie:
+""" + {
+            "problem": "Accroche sur la douleur/problème (ex: 'Marre de jeter de la nourriture ?')",
+            "solution": "Met en avant la solution/bénéfice (ex: '2 minutes pour planifier tes repas')",
+            "curiosity": "Créer de la curiosité/intrigue (ex: 'Ce que les parents organisés font différemment')",
+            "all": "Un mix de problème, solution et curiosité"
+        }.get(style, "problem") + f"""
+
+Contexte Mila:
+- Tagline: "{brief['app'].get('tagline', 'Tes repas de la semaine en 2 minutes')}"
+- Problème principal: {brief['problem'].get('main', 'Le stress des repas')}
+- Public cible: {brief['target'].get('primary', 'Parents actifs')}
+- Ton: {brief['tone'].get('voice', 'Une amie maman bienveillante')}
+
+Génère {count} hooks, tous différents, en français."""
+        
+        try:
+            claude_response = call_claude(system_prompt, user_prompt, max_tokens=2000)
+            
+            # Parse JSON from Claude response
+            import re
+            json_match = re.search(r'\{.*\}', claude_response, re.DOTALL)
+            if json_match:
+                claude_hooks = json.loads(json_match.group(0))
+            else:
+                claude_hooks = json.loads(claude_response)
+            
+            hooks = {
+                "id": generate_file_id(),
+                "timestamp": datetime.now().isoformat(),
+                "style": style,
+                "count": count,
+                "hooks": claude_hooks.get("hooks", [])
+            }
+            
+            # Ensure all hooks have required fields
+            for i, hook in enumerate(hooks["hooks"], 1):
+                hook.setdefault("id", f"hook_{i:03d}")
+                hook.setdefault("style", style)
+                hook.setdefault("estimated_duration", 5)
+                hook.setdefault("call_to_action", brief['cta'].get('primary', 'Essaie gratuitement'))
+            
+            console.print(f"✅ Generated {len(hooks['hooks'])} hooks using Claude", style="green")
+            
+            # Track expense (~$0.005 per hook)
+            estimated_cost = 0.005 + (count * 0.002)
+            get_budget().add_expense("claude", estimated_cost, f"Generated {count} hooks")
+            
+        except Exception as e:
+            console.print(f"❌ Claude API failed: {e}", style="red")
+            raise typer.Exit(1)
     
     # Save hooks
     if save or output:
@@ -298,18 +392,44 @@ def generate_hooks(
 
 @app.command()
 def generate_script(
-    hook_file: Path = typer.Argument(..., help="Hook JSON file"),
+    hook_file: Optional[Path] = typer.Argument(None, help="Hook JSON file (optional if using --hook-id)"),
+    hook_id: Optional[str] = typer.Option(None, "--hook-id", "-h", help="Hook ID to look up from recent hooks"),
     actor: Optional[str] = typer.Option(None, "--actor", "-a", help="Actor ID (auto-select if not specified)"),
     duration: int = typer.Option(30, "--duration", "-d", help="Script duration in seconds (15|30|60)"),
     fillers: bool = typer.Option(True, "--fillers/--no-fillers", help="Add natural fillers"),
     lang: str = typer.Option("fr", "--lang", "-l", help="Language (fr|en|es)"),
-    output: Optional[Path] = typer.Option(None, "--output", "-o", help="Output script file")
+    output: Optional[Path] = typer.Option(None, "--output", "-o", help="Output script file"),
+    use_claude: bool = typer.Option(True, "--claude/--no-claude", help="Use Claude AI for script generation")
 ) -> None:
     """Generate complete script from hook"""
     
-    # Validate inputs
-    if not hook_file.exists():
-        console.print(f"❌ Hook file not found: {hook_file}", style="red")
+    # Find hook - either from file or by ID
+    hook_data = None
+    
+    if hook_file and hook_file.exists():
+        with open(hook_file, encoding='utf-8') as f:
+            hook_data = json.load(f)
+    elif hook_id:
+        # Look up hook by ID from hooks directory
+        hooks_dir = OUTPUTS_DIR / "hooks"
+        if hooks_dir.exists():
+            for hooks_file in hooks_dir.glob("hooks_*.json"):
+                with open(hooks_file, encoding='utf-8') as f:
+                    data = json.load(f)
+                    for hook in data.get("hooks", []):
+                        if hook.get("id") == hook_id:
+                            hook_data = {"hooks": [hook]}
+                            hook_file = hooks_file
+                            console.print(f"✅ Found hook {hook_id} in {hooks_file.name}", style="green")
+                            break
+                    if hook_data:
+                        break
+        
+        if not hook_data:
+            console.print(f"❌ Hook ID not found: {hook_id}", style="red")
+            raise typer.Exit(1)
+    else:
+        console.print("❌ Please provide either a hook file or --hook-id", style="red")
         raise typer.Exit(1)
     
     if duration not in [15, 30, 60]:
@@ -361,8 +481,98 @@ def generate_script(
         "script_sections": []
     }
     
-    # Generate script content based on duration
-    if duration == 15:
+    # Load DNA for context
+    dna_file = get_dna_file()
+    dna = {}
+    if dna_file:
+        with open(dna_file) as f:
+            dna = json.load(f)
+    
+    if use_claude:
+        console.print("🤖 Generating script with Claude AI...", style="blue")
+        
+        system_prompt = """Tu es un copywriter expert en scripts vidéo publicitaires. Tu crées des scripts engageants pour des vidéos de 15, 30 ou 60 secondes.
+
+Règles:
+- Style conversationnel, naturel, comme parler à une amie
+- Ton: bienveillant, pragmatique, un peu imparfait, honnête
+- Évite les superlatifs ("magique", "incroyable", "révolutionnaire")
+- Utilise les mots simples: "Simple", "Concret", "Vrai", "Enfin", "Libérée"
+- Chaque section doit avoir un timing réaliste en secondes
+- La CTA finale doit être claire et actionnable
+
+Retourne UNIQUEMENT un JSON valide avec ce format:
+{
+  "script_sections": [
+    {"section": "hook", "text": "...", "duration": 5, "tone": "engaging"},
+    {"section": "problem", "text": "...", "duration": 7, "tone": "relatable"},
+    {"section": "solution", "text": "...", "duration": 10, "tone": "confident"},
+    {"section": "cta", "text": "...", "duration": 5, "tone": "urgent"}
+  ]
+}
+
+Les sections possibles selon la durée:
+- 15s: hook + cta
+- 30s: hook + problem + solution + cta
+- 60s: hook + problem_intro + problem_detail + solution + benefits + cta
+
+Les tons valides: engaging, relatable, confident, urgent, thoughtful, excited"""
+
+        user_prompt = f"""Génère un script publicitaire de {duration} secondes.
+
+Hook de départ: "{selected_hook.get('text', '')}"
+
+Contexte Mila:
+- App: {dna.get('app', {}).get('name', 'Mila')} - {dna.get('app', {}).get('tagline', 'Tes repas de la semaine en 2 minutes')}
+- Problème principal: {dna.get('problem', {}).get('main', 'Le stress des repas')}
+- Problèmes secondaires: {', '.join(dna.get('problem', {}).get('secondary', [])[:2])}
+- Solutions clés: {', '.join([f['name'] for f in dna.get('solution', {}).get('key_features', [])[:2]])}
+- Bénéfices: {dna.get('solution', {}).get('core_value', 'Libérer de la charge mentale')}
+- CTA: {selected_hook.get('call_to_action', 'Essaie gratuitement')}
+
+Acteur "{actor}": {actor_config.get('name', 'Sophie')}, âge {actor_config.get('age_range', '30-35')}, persona: {actor_config.get('persona', 'Maman bienveillante')}
+Langue: {lang}
+
+Timing total exact: {duration} secondes. Distribue les timings entre les sections pour atte exactement {duration}s."""
+        
+        try:
+            claude_response = call_claude(system_prompt, user_prompt, max_tokens=2000)
+            
+            # Parse JSON from response
+            import re
+            json_match = re.search(r'\{.*\}', claude_response, re.DOTALL)
+            if json_match:
+                claude_script = json.loads(json_match.group(0))
+            else:
+                claude_script = json.loads(claude_response)
+            
+            script["script_sections"] = claude_script.get("script_sections", [])
+            
+            # Validate timing
+            total_duration = sum(s.get("duration", 0) for s in script["script_sections"])
+            if total_duration != duration:
+                console.print(f"⚠️  Timing adjusted: {total_duration}s → {duration}s", style="yellow")
+                # Simple adjustment - scale to target duration
+                if total_duration > 0:
+                    ratio = duration / total_duration
+                    for section in script["script_sections"]:
+                        section["duration"] = round(section.get("duration", 5) * ratio)
+            
+            console.print(f"✅ Script generated with Claude ({len(script['script_sections'])} sections)", style="green")
+            
+            # Track expense
+            get_budget().add_expense("claude", 0.01, f"Script generation for {duration}s")
+            
+        except Exception as e:
+            console.print(f"❌ Claude API failed: {e}", style="red")
+            raise typer.Exit(1)
+    
+    if not use_claude:
+        # Fallback template-based generation
+        console.print("📝 Using template script generation...", style="blue")
+        
+    # Generate script content based on duration (fallback or if Claude skipped)
+    if not script["script_sections"]:
         # Short format: Hook + CTA
         script["script_sections"] = [
             {
