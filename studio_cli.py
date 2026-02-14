@@ -280,7 +280,7 @@ def generate_hooks(
             "hooks": [
                 {
                     "id": f"hook_{i:03d}",
-                    "text": f"[SIMULATED] Hook #{i} for {style} style targeting {brief['target_audience']}",
+                    "text": f"[SIMULATED] Hook #{i} for {style} style targeting {brief.get('target', {}).get('primary', 'parents')}",
                     "style": style,
                     "estimated_duration": 30,
                     "call_to_action": "Télécharge Mila maintenant!"
