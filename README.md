@@ -19,6 +19,15 @@ Copier `.env` et ajouter vos clés API :
 ```bash
 cp .env .env.local
 # Éditer .env.local avec vos vraies clés
+
+# Pour TTS ElevenLabs (optionnel)
+ELEVENLABS_API_KEY=your_elevenlabs_key
+
+# Pour génération vidéo fal.ai (requis pour Phase 2)
+FAL_KEY=your_fal_ai_key
+
+# Pour Claude API (optionnel - utilise mock sinon)
+ANTHROPIC_API_KEY=your_anthropic_key
 ```
 
 4. **Tester l'installation**
@@ -53,16 +62,48 @@ python studio_cli.py list-actors
 python studio_cli.py budget show
 ```
 
-## Pipeline complet (Phase 3)
+## Nouveautés Phase 2 & 3 ✅
 
+### 6. Génération audio (TTS)
 ```bash
-# Pipeline automatique complet
-python studio_cli.py full-pipeline \
-  --hook-style problem \
-  --actor sophie \
-  --duration 30 \
-  --format vertical \
-  --template talking_head
+# Audio avec Chatterbox (gratuit)
+python studio_cli.py generate-audio outputs/scripts/script_*.json
+
+# Audio avec ElevenLabs (premium)
+python studio_cli.py generate-audio outputs/scripts/script_*.json --engine elevenlabs
+```
+
+### 7. Génération vidéo lip-sync
+```bash
+# Vidéo avec Seedance 2.0 via fal.ai
+python studio_cli.py generate-video outputs/audio/audio_*.wav sophie --format vertical
+
+# Test rapide d'un acteur
+python studio_cli.py test-actor sophie
+```
+
+### 8. Assemblage final (FFmpeg)
+```bash
+# Assemblage avec sous-titres, musique et logo
+python studio_cli.py assemble outputs/video_raw/video_*.mp4 outputs/scripts/script_*.json
+
+# Assemblage sans sous-titres
+python studio_cli.py assemble outputs/video_raw/video_*.mp4 --no-subtitles
+```
+
+### 9. Pipeline complet automatisé
+```bash
+# Pipeline complet avec confirmation
+python studio_cli.py full-pipeline "19h. Frigo vide." --actor sophie --confirm
+
+# Test en mode dry-run (sans coûts)
+python studio_cli.py full-pipeline "Test hook" --actor alex --dry-run
+```
+
+### 10. Validation setup
+```bash
+# Tester la configuration complète
+python studio_cli.py test-setup
 ```
 
 ## Structure du projet
@@ -82,9 +123,9 @@ apps/mila/ads-engine/
 ├── outputs/
 │   ├── hooks/             # Hooks marketing générés ✅
 │   ├── scripts/           # Scripts complets ✅
-│   ├── audio/             # Fichiers audio TTS (Phase 2)
-│   ├── video_raw/         # Vidéos lip-sync brutes (Phase 2)
-│   ├── video_final/       # Vidéos finales (Phase 3)
+│   ├── audio/             # Fichiers audio TTS ✅ 
+│   ├── video_raw/         # Vidéos lip-sync brutes ✅
+│   ├── video_final/       # Vidéos finales ✅
 │   └── logs/              # Logs d'exécution ✅
 └── templates/
     ├── talking_head.json      # Template simple ✅
@@ -101,13 +142,15 @@ apps/mila/ads-engine/
 - `list-actors` - Bibliothèque acteurs
 - `budget` - Gestion budget et suivi coûts
 
-### Phase 2 (À implémenter) 🚧
-- `generate-audio` - TTS via Chatterbox/ElevenLabs
-- `generate-video` - Lip-sync via Seedance 2.0/Kling
+### Phase 2 (Implémenté) ✅
+- `generate-audio` - TTS via Chatterbox (mock) / ElevenLabs
+- `generate-video` - Lip-sync via Seedance 2.0 (fal.ai)
 - `test-actor` - Vidéos test 5s
+- `test-setup` - Validation setup complet
 
-### Phase 3 (À implémenter) 🚧
-- `post-prod` - Post-production FFmpeg
+### Phase 3 (Implémenté) ✅
+- `assemble` - Post-production FFmpeg (subtitles + music + logo)
+- `post-prod` - Alias pour assemble
 - `full-pipeline` - Pipeline automatique complet
 
 ## Configuration des acteurs
@@ -161,10 +204,29 @@ Utilisez `--dry-run` sur toutes les commandes payantes pour tester.
 ## Roadmap
 
 - [x] **Phase 1** : CLI de base + génération hooks/scripts
-- [ ] **Phase 2** : Audio TTS + Vidéo lip-sync  
-- [ ] **Phase 3** : Post-production + Pipeline complet
-- [ ] **Phase 4** : Interface web + API REST
-- [ ] **Phase 5** : ML pour optimisation automatique
+- [x] **Phase 2** : Audio TTS + Vidéo lip-sync via fal.ai
+- [x] **Phase 3** : Post-production FFmpeg + Pipeline complet
+- [ ] **Phase 4** : Claude API intégration + vrais hooks/scripts
+- [ ] **Phase 5** : Interface web + API REST
+- [ ] **Phase 6** : ML pour optimisation automatique
+
+## Notes Phase 2 Implementation
+
+### TTS - Chatterbox vs ElevenLabs
+- **Chatterbox** : Implémentation avec fallback mock (dependencies complexes)
+- **ElevenLabs** : Implémentation complète avec API key
+- **Usage** : Chatterbox par défaut (gratuit), ElevenLabs en premium
+
+### Video - Seedance 2.0
+- **API** : fal.ai client (fal-client package)
+- **Features** : Lip-sync natif multilingue, 15-20s max
+- **Input** : Portrait actor + audio TTS
+- **Cost** : ~$0.12/seconde
+
+### Post-production - FFmpeg
+- **Features** : Sous-titres, logo overlay, background music
+- **Templates** : talking_head, split_screen, problem_solution
+- **Formats** : vertical (9:16), square (1:1), horizontal (16:9)
 
 ## Support
 
